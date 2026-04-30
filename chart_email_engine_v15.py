@@ -35,7 +35,21 @@
 ║    ORDER  BY el.report_name, el.email_id, cc.sort_position           ║
 ║                                                                      ║
 ║  VARIABLE RESOLUTION ORDER (lowest → highest priority):              ║
-║    1. Built-in tokens  {today} {this_year} {last_quarter_year} …     ║
+║    1. Built-in tokens:                                               ║
+║       Day  : {today} {yesterday} {tomorrow}                          ║
+║              {this_day} {this_weekday} {this_weekday_short}          ║
+║       Week : {this_week} {last_week}                                 ║
+║       Month: {this_month} {this_month_num} {this_month_name}         ║
+║              {this_month_short} {last_month} {last_month_num}        ║
+║              {last_month_name} {last_month_short} {next_month}       ║
+║       Qtr  : {this_quarter} {last_quarter} {next_quarter}            ║
+║              {this_quarter_year} {last_quarter_year}                 ║
+║              {next_quarter_year}                                     ║
+║       Half : {this_half} {last_half}                                 ║
+║              {this_half_year} {last_half_year}                       ║
+║       Year : {this_year} {this_year_short} {last_year}               ║
+║              {last_year_short} {next_year}                           ║
+║       Misc : {env}                                                   ║
 ║    2. TABLE_VARS        (set in the CONFIG block below)              ║
 ║    3. email_id          (from email_list — per-dispatch identifier)  ║
 ║                                                                      ║
@@ -118,23 +132,68 @@ def _build_runtime_vars() -> dict:
     today_str  = now.strftime("%Y-%m-%d")
 
     yesterday  = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    tomorrow   = (now + timedelta(days=1)).strftime("%Y-%m-%d")
 
     lm_year, lm_month = (y - 1, 12) if m == 1 else (y, m - 1)
+    nm_year, nm_month = (y + 1,  1) if m == 12 else (y, m + 1)
 
     tq          = _quarter(m)
     lq_year, lq = _prev_quarter(y, m)
+    # next quarter
+    nq_m        = {1:4, 2:4, 3:4, 4:7, 5:7, 6:7, 7:10, 8:10, 9:10, 10:1, 11:1, 12:1}[m]
+    nq_year     = y + 1 if m >= 10 else y
+    nq          = _quarter(nq_m)
+
+    # half-year
+    this_half   = "H1" if m <= 6 else "H2"
+    last_half   = "H2" if m <= 6 else "H1"
+    last_half_year = (y - 1) if m <= 6 else y
+
+    # ISO week
+    iso_week    = now.isocalendar()[1]
+    last_week_dt = now - timedelta(weeks=1)
+    last_iso_week = last_week_dt.isocalendar()[1]
 
     auto: dict = {
+        # ── day ────────────────────────────────────────────────────────
         "today":              today_str,
         "yesterday":          yesterday,
+        "tomorrow":           tomorrow,
+        "this_day":           now.strftime("%d"),
+        "this_weekday":       now.strftime("%A"),
+        "this_weekday_short": now.strftime("%a"),
+        # ── week ───────────────────────────────────────────────────────
+        "this_week":          f"W{iso_week:02d}",
+        "last_week":          f"W{last_iso_week:02d}",
+        # ── month ──────────────────────────────────────────────────────
         "this_month":         now.strftime("%Y-%m"),
+        "this_month_num":     now.strftime("%m"),
+        "this_month_name":    now.strftime("%B"),
+        "this_month_short":   now.strftime("%b"),
         "last_month":         f"{lm_year}-{lm_month:02d}",
-        "this_year":          str(y),
-        "last_year":          str(y - 1),
+        "last_month_num":     f"{lm_month:02d}",
+        "last_month_name":    datetime(lm_year, lm_month, 1).strftime("%B"),
+        "last_month_short":   datetime(lm_year, lm_month, 1).strftime("%b"),
+        "next_month":         f"{nm_year}-{nm_month:02d}",
+        # ── quarter ────────────────────────────────────────────────────
         "this_quarter":       tq,
         "last_quarter":       lq,
+        "next_quarter":       nq,
         "this_quarter_year":  f"{tq}-{y}",
         "last_quarter_year":  f"{lq}-{lq_year}",
+        "next_quarter_year":  f"{nq}-{nq_year}",
+        # ── half-year ──────────────────────────────────────────────────
+        "this_half":          this_half,
+        "last_half":          last_half,
+        "this_half_year":     f"{this_half}-{y}",
+        "last_half_year":     f"{last_half}-{last_half_year}",
+        # ── year ───────────────────────────────────────────────────────
+        "this_year":          str(y),
+        "this_year_short":    now.strftime("%y"),
+        "last_year":          str(y - 1),
+        "last_year_short":    str(y - 1)[-2:],
+        "next_year":          str(y + 1),
+        # ── misc ───────────────────────────────────────────────────────
         "env":                "prod",
     }
     # TABLE_VARS override auto
