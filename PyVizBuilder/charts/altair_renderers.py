@@ -550,11 +550,12 @@ def _arc_altair(df: pd.DataFrame, cfg: dict) -> str:
     fg  = _alt_text(dark)
     sub = _alt_sub(dark)
 
-    dpi  = 150
+    dpi        = 150
+    render_dpi = 300
     w_in = cfg["width_px"]  / dpi
     h_in = cfg["height_px"] / dpi
 
-    fig, ax = plt.subplots(figsize=(w_in, h_in), dpi=dpi, facecolor=bg)
+    fig, ax = plt.subplots(figsize=(w_in, h_in), dpi=render_dpi, facecolor=bg)
     ax.set_facecolor(bg)
     ax.set_aspect("equal")
 
@@ -653,7 +654,7 @@ def _arc_altair(df: pd.DataFrame, cfg: dict) -> str:
     ax.axis("off")
 
     buf = io.BytesIO()
-    fig.savefig(buf, format="png", dpi=dpi,
+    fig.savefig(buf, format="png", dpi=render_dpi,
                 bbox_inches="tight", facecolor=bg, pad_inches=0.12)
     plt.close(fig)
     b64 = base64.b64encode(buf.getvalue()).decode()
