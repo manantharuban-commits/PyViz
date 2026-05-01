@@ -135,13 +135,17 @@ _ALT_LEG_DPI = 165   # matches export scale=3 (≈165 effective DPI)
 
 
 def _alt_compose(chart_png_bytes: bytes, labels: list,
-                 colours: list, dark: bool) -> str:
+                 colours: list, dark: bool,
+                 max_cols: int = 5) -> str:
     """
     Compose Altair chart PNG with a pixel-perfect matplotlib legend strip.
 
     Vega-Lite's configure_legend places text/symbols at wrong Y positions
     when rendered headlessly via vl_convert. Fix: suppress legend in every
     Vega encoding, draw legend here as matplotlib strip composited below.
+
+    max_cols — caller can cap columns (e.g. arc chart passes 3 for long labels).
+    ncols is also auto-capped so label text never bleeds into the next column.
     """
     from matplotlib.patches import FancyBboxPatch as _FBP
 
@@ -152,8 +156,18 @@ def _alt_compose(chart_png_bytes: bytes, labels: list,
     chart_img = Image.open(io.BytesIO(chart_png_bytes)).convert("RGBA")
     cw, ch    = chart_img.size
 
-    n     = len(labels)
-    ncols = min(5, n)
+    n = len(labels)
+
+    # Estimate px per char at 10pt @ _ALT_LEG_DPI (≈7.5 px/char for Arial)
+    _CH_PX     = 7.5
+    max_lbl_px = max(len(str(l)) for l in labels) * _CH_PX
+    # swatch + gap + text must fit inside col_w fraction of cw
+    # col_w * cw >= swatch_px + gap_px + max_lbl_px
+    # swatch_px ≈ 0.055 * col_w * cw  (tiny, ~2% of col)
+    # Solve: col_w >= max_lbl_px / (cw * 0.94)
+    min_col_w_frac = (max_lbl_px + 22) / (cw * 0.94)  # 22px for swatch+gap
+    ncols_max_fit  = max(1, int(1.0 / min_col_w_frac))
+    ncols = min(max_cols, ncols_max_fit, n)
     nrows = -(-n // ncols)
 
     row_h_px = 34

@@ -1,6 +1,12 @@
+import io
 import base64
+import math
 
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import altair as alt
 import vl_convert as vlc
 
@@ -494,18 +500,38 @@ def _boxplot_altair(df: pd.DataFrame, cfg: dict) -> str:
 
 def _arc_altair(df: pd.DataFrame, cfg: dict) -> str:
     """
-    Pie / donut arc chart with text labels.
-    x_column   = label  |  y_columns[0] = value
-    y_columns[1] = 'donut' renders as donut
-    sort_order = desc sorts slices largest-first
+    Pie / donut — matplotlib with leader-line labels per slice.
+
+    Every slice gets an arrow from the slice edge to a stacked label
+    showing  value  (pct%).  Labels on each side are Y-stacked so they
+    never overlap regardless of slice size.
+    Legend shows category names only (no values).
+
+    x_column   = label col  |  y_columns[0] = value col
+    y_columns[1] = 'donut'  → donut style
+    sort_order = desc | asc | none
     """
+    def _stack_y(items: list, min_sep: float) -> list:
+        """
+        items  — list of (natural_y, payload) sorted top→bottom.
+        Returns list of (adjusted_y, payload) with min_sep guaranteed,
+        spreading downward from the topmost natural position.
+        """
+        if not items:
+            return []
+        items = sorted(items, key=lambda x: -x[0])   # top first
+        out   = [(items[0][0], items[0][1])]
+        for nat_y, payload in items[1:]:
+            prev  = out[-1][0]
+            adj_y = min(nat_y, prev - min_sep)
+            out.append((adj_y, payload))
+        return out
+
     dark     = cfg.get("dark_mode", False)
     lbl_col  = cfg["x_column"]
     val_col  = cfg["y_columns"][0] if cfg["y_columns"] else None
     is_donut = len(cfg["y_columns"]) > 1 and str(cfg["y_columns"][1]).lower() == "donut"
-    scheme   = _alt_scheme(cfg["color_theme"])
-    w        = min(cfg["width_px"] - 20, 460)
-    h        = min(cfg["height_px"] - 20, 380)
+
     if val_col is None or val_col not in df.columns:
         return None
 
@@ -514,45 +540,121 @@ def _arc_altair(df: pd.DataFrame, cfg: dict) -> str:
     elif cfg["sort_order"] == "asc":
         df = df.sort_values(val_col, ascending=True).reset_index(drop=True)
 
-    total          = df[val_col].sum()
-    df             = df.copy()
-    df["_pct"]     = (df[val_col] / total * 100).round(1)
-    df["_pct_label"] = df["_pct"].round(0).astype(int).astype(str) + "%"
+    labels  = df[lbl_col].tolist()
+    values  = [float(v) for v in df[val_col]]
+    total   = sum(values)
+    pcts    = [v / total * 100 for v in values]
+    colours = _alt_colours(cfg["color_theme"], len(labels))
 
-    base = alt.Chart(df).encode(
-        theta=alt.Theta(f"{val_col}:Q", stack=True),
-        color=alt.Color(f"{lbl_col}:N",
-                        scale=alt.Scale(scheme=scheme), legend=None),
-        tooltip=[
-            alt.Tooltip(f"{lbl_col}:N", title="Segment"),
-            alt.Tooltip(f"{val_col}:Q", title="Value", format=","),
-            alt.Tooltip("_pct:Q", title="%", format=".1f"),
-        ],
+    bg  = _alt_bg(dark)
+    fg  = _alt_text(dark)
+    sub = _alt_sub(dark)
+
+    dpi  = 150
+    w_in = cfg["width_px"]  / dpi
+    h_in = cfg["height_px"] / dpi
+
+    fig, ax = plt.subplots(figsize=(w_in, h_in), dpi=dpi, facecolor=bg)
+    ax.set_facecolor(bg)
+    ax.set_aspect("equal")
+
+    # ── Draw pie ──────────────────────────────────────────────────────
+    wedges, _ = ax.pie(
+        values,
+        colors=colours,
+        startangle=90,
+        counterclock=False,
+        wedgeprops=dict(linewidth=1.5, edgecolor=bg, antialiased=True),
+        labels=None,
     )
-
-    outer_r    = min(w, h) // 2 - 10
-    arc_kwargs = dict(outerRadius=outer_r, stroke=_alt_bg(dark), strokeWidth=2)
     if is_donut:
-        arc_kwargs["innerRadius"] = min(w, h) // 4
+        ax.add_patch(plt.Circle((0, 0), 0.46, fc=bg, zorder=10))
 
-    pie      = base.mark_arc(**arc_kwargs)
-    text_r   = outer_r * (0.65 if is_donut else 0.72)
-    layers   = [pie]
-    if cfg.get("show_values", True):
-        layers.append(
-            base.mark_text(radius=text_r)
-            .encode(text=alt.Text("_pct_label:N"))
-        )
+    # ── Collect slice midpoint data ───────────────────────────────────
+    R_EDGE  = 1.06   # leader line starts just outside slice
+    R_KINK  = 1.22   # radial segment end / horizontal segment start
+    X_LABEL = 1.55   # x position of label text anchor
 
-    chart = (
-        alt.layer(*layers)
-        .properties(title=_alt_title(cfg), width=w, height=h,
-                    background=_alt_bg(dark))
+    right_items, left_items = [], []
+    for wedge, val, pct, lbl, clr in zip(wedges, values, pcts, labels, colours):
+        mid_deg = (wedge.theta1 + wedge.theta2) / 2
+        rad     = math.radians(mid_deg)
+        cx, cy  = math.cos(rad), math.sin(rad)
+        val_str = f"{int(val):,}" if val >= 1000 else str(int(val))
+        txt     = f"{val_str}  ({pct:.1f}%)"
+        kink_y  = R_KINK * cy
+        payload = (cx, cy, txt, clr)
+        if cx >= 0:
+            right_items.append((kink_y, payload))
+        else:
+            left_items.append((kink_y, payload))
+
+    # 11pt @ 150 DPI ≈ 23px; axes y range ≈ 3.0 units over ~300px → 1 unit≈100px
+    # min_sep = 0.28 ensures 11pt labels never touch after stacking
+    stacked_right = _stack_y(right_items, min_sep=0.28)
+    stacked_left  = _stack_y(left_items,  min_sep=0.28)
+
+    # ── Draw leader lines + labels ────────────────────────────────────
+    for adj_y, (cx, cy, txt, clr) in stacked_right + stacked_left:
+        kink_x = R_KINK * cx
+        kink_y = R_KINK * cy
+        edge_x = R_EDGE * cx
+        edge_y = R_EDGE * cy
+        x_anc  = X_LABEL if cx >= 0 else -X_LABEL
+        ha     = "left"  if cx >= 0 else "right"
+
+        ax.plot([edge_x, kink_x], [edge_y, kink_y],
+                color=sub, lw=0.85, zorder=5, solid_capstyle="round")
+        ax.plot([kink_x, x_anc], [kink_y, adj_y],
+                color=sub, lw=0.85, zorder=5, solid_capstyle="round")
+        ax.text(x_anc + (0.05 if cx >= 0 else -0.05), adj_y,
+                txt, ha=ha, va="center",
+                fontsize=5.5, fontweight="bold",
+                color=fg, fontfamily="Arial", zorder=6)
+
+    # ── Title / subtitle ─────────────────────────────────────────────
+    title    = cfg.get("title", "")
+    subtitle = cfg.get("subtitle", "")
+    if title:
+        ax.text(0, 1.08, title,
+                ha="left", va="bottom",
+                fontsize=7, fontweight="bold",
+                color=fg, fontfamily="Arial", zorder=7,
+                transform=ax.transAxes)
+    if subtitle:
+        ax.text(0, 1.02, subtitle,
+                ha="left", va="bottom",
+                fontsize=5.5, color=sub,
+                fontfamily="Arial", zorder=7,
+                transform=ax.transAxes)
+
+    # ── Legend — names only ───────────────────────────────────────────
+    handles = [mpatches.Patch(facecolor=c, edgecolor="none", label=lbl)
+               for c, lbl in zip(colours, labels)]
+    ncols = min(4, len(handles))
+    leg = ax.legend(
+        handles=handles,
+        loc="lower center",
+        bbox_to_anchor=(0.5, -0.14),
+        ncol=ncols,
+        frameon=False,
+        fontsize=6,
+        handlelength=0.85,
+        handleheight=0.65,
+        handletextpad=0.45,
+        columnspacing=1.1,
+        borderpad=0,
     )
-    chart       = _alt_common(chart, dark)
-    leg_labels  = df[lbl_col].tolist()
-    leg_colours = _alt_colours(cfg["color_theme"], len(leg_labels))
-    png         = vlc.vegalite_to_png(chart.to_json(), scale=3)
-    if leg_labels:
-        return _alt_compose(png, leg_labels, leg_colours, dark)
-    return "data:image/png;base64," + base64.b64encode(png).decode()
+    for txt in leg.get_texts():
+        txt.set_color(sub)
+
+    ax.set_xlim(-2.1, 2.1)
+    ax.set_ylim(-1.35, 1.35)
+    ax.axis("off")
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=dpi,
+                bbox_inches="tight", facecolor=bg, pad_inches=0.12)
+    plt.close(fig)
+    b64 = base64.b64encode(buf.getvalue()).decode()
+    return f"data:image/png;base64,{b64}"
