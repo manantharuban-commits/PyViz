@@ -1,0 +1,16 @@
+.draggable-element {
+  transition: box-shadow 0.2s ease;
+}
+
+.draggable-element.selected {
+  z-index: 100;
+}
+
+.draggable-element:hover {
+  border-color: #0066cc;
+  cursor: grab;
+}
+
+.draggable-element:active {
+  cursor: grabbing;
+}

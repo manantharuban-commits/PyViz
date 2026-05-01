@@ -1,0 +1,230 @@
+.properties-panel {
+  width: 280px;
+  min-width: 280px;
+  background: #fafafa;
+  border-left: 1px solid #ddd;
+  padding: 12px;
+  overflow-y: auto;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.properties-panel.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #999;
+  gap: 8px;
+}
+
+.shortcut-hint {
+  font-size: 11px;
+  color: #bbb;
+  margin-top: 4px;
+}
+
+/* ── Header ── */
+.prop-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.prop-panel-header h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+  text-transform: capitalize;
+}
+
+.prop-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.prop-action-btn {
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #444;
+  padding: 0;
+}
+
+.prop-action-btn:hover {
+  background: #e0e0e0;
+}
+
+.prop-action-btn.danger:hover {
+  background: #fee;
+  border-color: #f99;
+  color: #c00;
+}
+
+/* ── Warnings ── */
+.prop-warnings {
+  background: #fff8e1;
+  border: 1px solid #f0c040;
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prop-warning {
+  font-size: 11px;
+  color: #7a5500;
+  line-height: 1.4;
+}
+
+/* ── Section headers ── */
+.prop-section-header {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #888;
+  margin: 10px 0 4px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* ── Groups ── */
+.prop-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 6px;
+}
+
+.prop-row {
+  display: flex;
+  gap: 8px;
+}
+
+.prop-row .prop-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.prop-group label {
+  font-weight: 600;
+  color: #555;
+  font-size: 11px;
+}
+
+.prop-group input[type="text"],
+.prop-group input[type="number"],
+.prop-group textarea,
+.prop-group select {
+  padding: 5px 7px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  background: #fff;
+}
+
+.prop-group input[type="text"]:focus,
+.prop-group input[type="number"]:focus,
+.prop-group textarea:focus,
+.prop-group select:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.15);
+}
+
+.prop-group textarea {
+  resize: vertical;
+  min-height: 56px;
+  font-family: monospace;
+  font-size: 11px;
+}
+
+.prop-group input[type="color"] {
+  width: 100%;
+  height: 28px;
+  cursor: pointer;
+  padding: 2px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #fff;
+}
+
+/* ── Align buttons ── */
+.align-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.align-btn {
+  flex: 1;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 10px;
+  color: #666;
+  text-align: center;
+}
+
+.align-btn:hover {
+  background: #f0f0f0;
+}
+
+.align-btn.active {
+  background: #e8f0fb;
+  border-color: #0066cc;
+  color: #0066cc;
+  font-weight: 700;
+}
+
+/* ── Checkbox label ── */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500 !important;
+  cursor: pointer;
+}
+
+/* ── Shortcuts ── */
+.shortcut-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 8px;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.shortcut-key {
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 10px;
+  font-family: monospace;
+  color: #444;
+  white-space: nowrap;
+}
+
+.shortcut-grid span:not(.shortcut-key) {
+  font-size: 11px;
+  color: #666;
+}

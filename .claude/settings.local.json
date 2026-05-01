@@ -7,7 +7,23 @@
       "Bash(python -c \"import ast; ast.parse\\(open\\('chart_email_engine_v15.py', encoding='utf-8'\\).read\\(\\)\\); print\\('syntax OK'\\)\")",
       "Bash(python chart_email_engine_v15.py --test --out chart_test_gallery.html)",
       "Bash(python -c \"import ast; ast.parse\\(open\\('chart_email_engine_v15.py', encoding='utf-8'\\).read\\(\\)\\); print\\('OK'\\)\")",
-      "Bash(python chart_email_engine_v15.py --test)"
+      "Bash(python chart_email_engine_v15.py --test)",
+      "Bash(npm run *)",
+      "Bash(npm start *)",
+      "Bash(netstat -ano)",
+      "Bash(findstr \":3000\")",
+      "Bash(tasklist /FI \"PID eq 16144\")",
+      "PowerShell(Get-Process -Id 16144)",
+      "PowerShell(Get-Process -Id 16144 -ErrorAction SilentlyContinue)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(npx react-scripts *)",
+      "Bash(curl -s http://localhost:3000)",
+      "PowerShell($pid = \\(Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue\\).OwningProcess | Select-Object -First 1; if \\($pid\\) { Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue; \"Killed PID $pid\" } else { \"No process on 3000\" })",
+      "PowerShell($p = \\(Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue\\).OwningProcess | Select-Object -First 1; if \\($p\\) { Stop-Process -Id $p -Force -ErrorAction SilentlyContinue; \"Killed $p\" } else { \"No process on 3000\" })",
+      "Bash(python -c \"import docx; print\\('ok'\\)\")",
+      "Bash(pip install *)",
+      "Bash(python generate_docs.py)",
+      "Bash(python -c \"import os; s=os.path.getsize\\('PyVizBuilder_Production_Deployment_Guide.docx'\\); print\\(f'{s/1024:.1f} KB'\\)\")"
     ]
   }
 }
