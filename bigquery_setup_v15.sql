@@ -75,13 +75,15 @@ CREATE OR REPLACE TABLE `YOUR_PROJECT_ID.YOUR_DATASET.email_list`
   recipient_email  STRING  NOT NULL,   -- the only address field
   subject          STRING  NOT NULL,   -- supports {this_month} etc.
   html_template    STRING  NOT NULL,   -- body HTML with {{VAR}} placeholders
-  filter_params    STRING             -- JSON: {"report_year":"2026"}
+  filter_params    STRING,            -- JSON: {"report_year":"2026"}
                                        -- NULL = use default runtime tokens
+  group_email      STRING             -- 'Y' = render once for all recipients; filters ignore email_id
 )
 OPTIONS (
   description = 'v13: one row per (report_name, recipient_email). '
                 'No email_id, no sender_email. '
-                'filter_params provides per-recipient variable overrides.'
+                'filter_params provides per-recipient variable overrides. '
+                'group_email=Y collapses all rows to a single render pass.'
 );
 
 INSERT INTO `YOUR_PROJECT_ID.YOUR_DATASET.email_list`

@@ -11,17 +11,29 @@ from .altair_renderers import (
     _strip_altair,
     _boxplot_altair,
     _arc_altair,
+    _metric_card,
+    _table_chart,
+    _funnel_altair,
+    _bullet_altair,
+    _grouped_bar_altair,
+    _stacked_bar_altair,
 )
 
 _RENDERERS = {
-    "line_altair":    _line_altair,
-    "bar_altair":     _bar_altair,
-    "scatter_altair": _scatter_altair,
-    "heatmap_altair": _heatmap_altair,
-    "area_altair":    _area_altair,
-    "strip_altair":   _strip_altair,
-    "boxplot_altair": _boxplot_altair,
-    "arc_altair":     _arc_altair,
+    "line_altair":        _line_altair,
+    "bar_altair":         _bar_altair,
+    "scatter_altair":     _scatter_altair,
+    "heatmap_altair":     _heatmap_altair,
+    "area_altair":        _area_altair,
+    "strip_altair":       _strip_altair,
+    "boxplot_altair":     _boxplot_altair,
+    "arc_altair":         _arc_altair,
+    "metric_card":        _metric_card,
+    "table_chart":        _table_chart,
+    "funnel_altair":      _funnel_altair,
+    "bullet_altair":      _bullet_altair,
+    "grouped_bar_altair": _grouped_bar_altair,
+    "stacked_bar_altair": _stacked_bar_altair,
 }
 
 

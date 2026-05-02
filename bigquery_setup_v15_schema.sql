@@ -79,11 +79,13 @@ CREATE OR REPLACE TABLE `YOUR_PROJECT_ID.YOUR_DATASET.email_list`
   report_name      STRING  NOT NULL,   -- FK → chart_config_view.report_name
   recipient_email  STRING  NOT NULL,   -- stored for reference / sending
   subject          STRING  NOT NULL,   -- supports {this_month} {email_id} etc.
-  html_template    STRING  NOT NULL    -- full HTML body with {{VAR}} placeholders
+  html_template    STRING  NOT NULL,   -- full HTML body with {{VAR}} placeholders
+  group_email      STRING             -- 'Y' = render once for all recipients; filters ignore email_id
 )
 OPTIONS (
   description = 'v15: one row per dispatch. Group key (report_name, email_id). '
-                'email_id is available as {email_id} token in chart filters.'
+                'email_id is available as {email_id} token in chart filters. '
+                'group_email=Y collapses all email_ids to a single render pass.'
 );
 
 -- ─────────────────────────────────────────────────────────────────────

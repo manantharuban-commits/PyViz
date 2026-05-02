@@ -21,7 +21,7 @@ def run_visual_test(dark: bool = False, out_path: str = "chart_test_gallery.html
     ok = err = 0
 
     for i, (label, df, cfg) in enumerate(cases, 1):
-        print(f"  [{i:2d}/8]  {label:<22s}", end=" ", flush=True)
+        print(f"  [{i:2d}/14]  {label:<22s}", end=" ", flush=True)
         try:
             b64 = render_chart(df, cfg)
             if b64:

@@ -189,6 +189,88 @@ def _build_mock_cases(dark: bool) -> list:
         sort_order="desc", width_px=520, height_px=380, dark_mode=dark,
         x_label="Segment", y_label="Share (%)")))
 
+    # ── 9. metric_card ──────────────────────────────────────────────
+    df = pd.DataFrame({
+        "KPI":     ["Revenue", "Leads", "Deals Won", "Avg Deal"],
+        "Current": [91000, 342, 47, 19361],
+        "Prior":   [80100, 298, 41, 19537],
+    })
+    cases.append(("metric_card", df, _mock_cfg(
+        "metric_card", "Q2 2026 KPIs", "vs Q1 2026",
+        "KPI", ["Current", "Prior"],
+        color_theme="blue", show_values=False, legend=False,
+        ref_line_value="95000",
+        width_px=900, height_px=280, dark_mode=dark)))
+
+    # ── 10. table_chart ─────────────────────────────────────────────
+    df = pd.DataFrame({
+        "Region":    regions,
+        "Revenue":   [91000, 72300, 58900, 83400, 49700],
+        "Leads":     [342, 278, 195, 312, 168],
+        "Conv %":    [13.7, 11.2, 8.9, 14.1, 7.3],
+    })
+    cases.append(("table_chart", df, _mock_cfg(
+        "table_chart", "Regional Performance — Top 5", "YTD 2026",
+        "Region", ["Revenue", "Leads", "Conv %"],
+        color_theme="blue", show_values=False, legend=False,
+        width_px=620, height_px=280, dark_mode=dark)))
+
+    # ── 11. funnel_altair ───────────────────────────────────────────
+    df = pd.DataFrame({
+        "Stage": ["Awareness","Interest","Consideration","Intent","Conversion"],
+        "Count": [12000, 7800, 4200, 1850, 620],
+    })
+    cases.append(("funnel_altair", df, _mock_cfg(
+        "funnel_altair", "Sales Funnel — 2026", "Leads to close",
+        "Stage", ["Count"],
+        color_theme="vibrant", show_values=True, legend=True,
+        sort_order="none", width_px=580, height_px=320, dark_mode=dark,
+        x_label="Count")))
+
+    # ── 12. bullet_altair ───────────────────────────────────────────
+    df = pd.DataFrame({
+        "Region":  regions,
+        "Revenue": [91000, 72300, 58900, 83400, 49700],
+    })
+    cases.append(("bullet_altair", df, _mock_cfg(
+        "bullet_altair", "Revenue vs Target by Region", "Target: $85,000",
+        "Region", ["Revenue"],
+        color_theme="teal", show_values=True, legend=True,
+        ref_line_value="85000",
+        width_px=580, height_px=300, dark_mode=dark,
+        x_label="Revenue ($)")))
+
+    # ── 13. grouped_bar_altair ──────────────────────────────────────
+    df = pd.DataFrame({
+        "Quarter": ["Q1","Q1","Q2","Q2","Q3","Q3","Q4","Q4"],
+        "Segment": ["Enterprise","SMB"] * 4,
+        "Revenue": [42000,18000, 55000,22000, 68000,28000, 80000,35000],
+    })
+    cases.append(("grouped_bar_altair", df, _mock_cfg(
+        "grouped_bar_altair", "Revenue by Quarter & Segment", "Enterprise vs SMB · 2026",
+        "Quarter", ["Revenue"],
+        color_theme="blue", hue_column="Segment",
+        show_values=True, legend=True, sort_order="none",
+        width_px=620, height_px=340, dark_mode=dark,
+        x_label="Quarter", y_label="Revenue ($)")))
+
+    # ── 14. stacked_bar_altair ──────────────────────────────────────
+    df_rows = []
+    for q in quarters:
+        for seg, base_k in [("Enterprise",{"Q1":42,"Q2":55,"Q3":68,"Q4":80}),
+                             ("Mid-Market",{"Q1":28,"Q2":35,"Q3":41,"Q4":52}),
+                             ("SMB",       {"Q1":18,"Q2":22,"Q3":28,"Q4":35})]:
+            df_rows.append({"Quarter": q, "Segment": seg,
+                             "Revenue": base_k[q] * 1000})
+    df = pd.DataFrame(df_rows)
+    cases.append(("stacked_bar_altair", df, _mock_cfg(
+        "stacked_bar_altair", "Revenue by Quarter — Stacked", "By Segment · 2026",
+        "Quarter", ["Revenue"],
+        color_theme="vibrant", hue_column="Segment",
+        show_values=False, legend=True, sort_order="none",
+        width_px=620, height_px=340, dark_mode=dark,
+        x_label="Quarter", y_label="Revenue ($)")))
+
     return cases
 
 
@@ -223,6 +305,7 @@ def _build_mock_joined_df() -> pd.DataFrame:
             "recipient_email": "mock@example.com",
             "subject":         "Mock Report — All Chart Types",
             "html_template":   html_tmpl,
+            "group_email":     "N",
             "sort_position":   pos,
             "variable_name":   label.upper(),
             "chart_type":      cfg["chart_type"],

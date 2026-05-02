@@ -238,3 +238,17 @@ def _alt_compose(chart_png_bytes: bytes, labels: list,
     b64 = base64.b64encode(buf2.getvalue()).decode()
     buf2.close()
     return f"data:image/png;base64,{b64}"
+
+
+def _smart_fmt(v: float) -> str:
+    """Format number with K/M/B suffix."""
+    av = abs(v)
+    if av >= 1_000_000_000:
+        return f"{v / 1_000_000_000:.1f}B"
+    if av >= 1_000_000:
+        return f"{v / 1_000_000:.1f}M"
+    if av >= 1_000:
+        return f"{v / 1_000:.1f}K"
+    if av >= 10:
+        return f"{v:,.0f}"
+    return f"{v:.2f}"

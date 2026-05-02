@@ -153,6 +153,7 @@ def process_emails(bq) -> list:
             el.recipient_email,
             el.subject,
             el.html_template,
+            COALESCE(el.group_email, 'N') AS group_email,
             cc.sort_position,
             cc.variable_name,
             cc.chart_type,
@@ -196,19 +197,26 @@ def process_emails(bq) -> list:
 
     output_rows = []
 
-    # 3. Group by (report_name, email_id)
+    # 3. Group by (report_name, email_id) — one iteration per email_list row
     for (report_name, email_id), group in joined_df.groupby(
             ["report_name", "email_id"], sort=False):
 
-        first = group.iloc[0]
+        first          = group.iloc[0]
+        is_group_email = str(first.get("group_email", "N")).strip().upper() == "Y"
 
         # 4a. Per-email variable context
-        email_vars = {**runtime_vars, "email_id": str(email_id)}
+        # group_email=Y: omit email_id so {email_id} tokens are NOT substituted in chart filters
+        if is_group_email:
+            email_vars = {**runtime_vars}
+        else:
+            email_vars = {**runtime_vars, "email_id": str(email_id)}
 
         print(f"{'─'*62}")
         print(f"  report_name   : {report_name}")
         print(f"  email_id      : {email_id}")
         print(f"  recipient     : {first.get('recipient_email', '')}")
+        if is_group_email:
+            print(f"  group_email   : Y  (chart filters run without email_id substitution)")
         print(f"  charts in grp : {len(group)}")
 
         # 4b. Resolve template + subject
