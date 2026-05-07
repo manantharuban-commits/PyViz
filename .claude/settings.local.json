@@ -24,7 +24,10 @@
       "Bash(pip install *)",
       "Bash(python generate_docs.py)",
       "Bash(python -c \"import os; s=os.path.getsize\\('PyVizBuilder_Production_Deployment_Guide.docx'\\); print\\(f'{s/1024:.1f} KB'\\)\")",
-      "Bash(python -c \"from PyVizBuilder.engine import process_emails; print\\('OK'\\)\")"
+      "Bash(python -c \"from PyVizBuilder.engine import process_emails; print\\('OK'\\)\")",
+      "Bash(npm list *)",
+      "Bash(npm install *)",
+      "Bash(node generate_ppt.js)"
     ]
   }
 }
