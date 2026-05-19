@@ -27,7 +27,11 @@
       "Bash(python -c \"from PyVizBuilder.engine import process_emails; print\\('OK'\\)\")",
       "Bash(npm list *)",
       "Bash(npm install *)",
-      "Bash(node generate_ppt.js)"
+      "Bash(node generate_ppt.js)",
+      "Bash(awk 'NR>=668 && NR<=810 {print NR\": \"$0}' PyVizBuilder/charts/altair_renderers.py)",
+      "Bash(awk 'NR>=810 && NR<=910 {print NR\": \"$0}' PyVizBuilder/charts/altair_renderers.py)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\user\\\\Documents\\\\Office Projects\\\\PyViz\\\\Build\" | Select-Object Name, Length; \\(Get-Content \"C:\\\\Users\\\\user\\\\Documents\\\\Office Projects\\\\PyViz\\\\Build\\\\pyviz_main.py\"\\).Count; \\(Get-Content \"C:\\\\Users\\\\user\\\\Documents\\\\Office Projects\\\\PyViz\\\\Build\\\\bigquery_client.py\"\\).Count)",
+      "PowerShell($files = Get-ChildItem \"C:\\\\Users\\\\user\\\\Documents\\\\Office Projects\\\\PyViz\\\\Build\"; foreach \\($f in $files\\) { Write-Host \"$\\($f.Name\\)  $\\($f.Length\\) bytes\" }; $m = \\(Get-Content \"C:\\\\Users\\\\user\\\\Documents\\\\Office Projects\\\\PyViz\\\\Build\\\\pyviz_main.py\" -Raw\\) -split \"`n\"; Write-Host \"pyviz_main.py lines: $\\($m.Count\\)\"; $b = \\(Get-Content \"C:\\\\Users\\\\user\\\\Documents\\\\Office Projects\\\\PyViz\\\\Build\\\\bigquery_client.py\" -Raw\\) -split \"`n\"; Write-Host \"bigquery_client.py lines: $\\($b.Count\\)\")"
     ]
   }
 }

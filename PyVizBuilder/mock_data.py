@@ -105,25 +105,7 @@ def _build_mock_cases(dark: bool) -> list:
         width_px=580, height_px=340, dark_mode=dark,
         x_label="Deal Size ($)", y_label="Revenue ($)")))
 
-    # ── 4. heatmap_altair ───────────────────────────────────────────
-    df_rows  = []
-    base_rev = {"North":31000,"South":24000,"East":19000,"West":28000,"Central":16000}
-    for region in regions:
-        for month in months:
-            noise = np.random.default_rng(hash(region+month) % 999).integers(-3000,5000)
-            df_rows.append({"Region": region, "Month": month,
-                             "Revenue": base_rev[region] + noise})
-    df = pd.DataFrame(df_rows)
-    cases.append(("heatmap_altair", df, _mock_cfg(
-        "heatmap_altair", "Revenue Heatmap — Region x Month (Altair)",
-        "Darker = higher revenue · 2026",
-        "Month", ["Revenue"],
-        color_theme="blue", hue_column="Region", legend=True,
-        show_values=True, sort_order="none",
-        width_px=640, height_px=320, dark_mode=dark,
-        x_label="Month", y_label="Region")))
-
-    # ── 5. area_altair ──────────────────────────────────────────────
+    # ── 4. area_altair ──────────────────────────────────────────────
     df = pd.DataFrame({
         "Month":   months,
         "Revenue": [42000,47500,53200,49800,61000,67300,
@@ -189,33 +171,7 @@ def _build_mock_cases(dark: bool) -> list:
         sort_order="desc", width_px=520, height_px=380, dark_mode=dark,
         x_label="Segment", y_label="Share (%)")))
 
-    # ── 9. metric_card ──────────────────────────────────────────────
-    df = pd.DataFrame({
-        "KPI":     ["Revenue", "Leads", "Deals Won", "Avg Deal"],
-        "Current": [91000, 342, 47, 19361],
-        "Prior":   [80100, 298, 41, 19537],
-    })
-    cases.append(("metric_card", df, _mock_cfg(
-        "metric_card", "Q2 2026 KPIs", "vs Q1 2026",
-        "KPI", ["Current", "Prior"],
-        color_theme="blue", show_values=False, legend=False,
-        ref_line_value="95000",
-        width_px=900, height_px=280, dark_mode=dark)))
-
-    # ── 10. table_chart ─────────────────────────────────────────────
-    df = pd.DataFrame({
-        "Region":    regions,
-        "Revenue":   [91000, 72300, 58900, 83400, 49700],
-        "Leads":     [342, 278, 195, 312, 168],
-        "Conv %":    [13.7, 11.2, 8.9, 14.1, 7.3],
-    })
-    cases.append(("table_chart", df, _mock_cfg(
-        "table_chart", "Regional Performance — Top 5", "YTD 2026",
-        "Region", ["Revenue", "Leads", "Conv %"],
-        color_theme="blue", show_values=False, legend=False,
-        width_px=620, height_px=280, dark_mode=dark)))
-
-    # ── 11. funnel_altair ───────────────────────────────────────────
+    # ── 9. funnel_altair ───────────────────────────────────────────
     df = pd.DataFrame({
         "Stage": ["Awareness","Interest","Consideration","Intent","Conversion"],
         "Count": [12000, 7800, 4200, 1850, 620],
